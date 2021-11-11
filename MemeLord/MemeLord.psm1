@@ -1,5 +1,7 @@
 function Key-Check {
     
+    $ErrorActionPreference = "SilentlyContinue"
+
     . $PSScriptRoot/Config.ps1
 
     if ($null -eq $Properties.Username) {
@@ -10,19 +12,13 @@ function Key-Check {
         $fileContent | Set-Content $PSScriptRoot/Config.ps1   
     }
 
-    if ($null -eq ($Password = $Properties.Password | ConvertTo-SecureString -ErrorAction SilentlyContinue)) {
+    if ($null -eq ($Password = $Properties.Password | ConvertTo-SecureString)) {
         $Password = Read-Host "Please enter your password" -assecurestring | convertfrom-securestring
         $textToAdd = "Password = " + '"' + "$Password" + '"'
         $fileContent = Get-Content $PSScriptRoot/Config.ps1
         $fileContent[2] += $textToAdd
         $fileContent | Set-Content $PSScriptRoot/Config.ps1    
     }
-
-    . $PSScriptRoot/Config.ps1
-
-    $Username = "$Properties.Username"
-    $Password = $Properties.Password | ConvertTo-SecureString
-    $Credentials = New-Object System.Management.Automation.PSCredential($Username, $Password)
 }
 
 function Invoke-MemeLord {
@@ -36,11 +32,13 @@ function Invoke-MemeLord {
         [switch]$testBoxes
     )
 
+    $ErrorActionPreference = "SilentlyContinue"
+
     Key-Check
 
     . $PSScriptRoot/Config.ps1
 
-    $Username = "$Properties.Username"
+    $Username = $Properties.Username
     $Password = $Properties.Password | ConvertTo-SecureString
     $Credentials = New-Object System.Management.Automation.PSCredential($Username, $Password)
 
@@ -53,11 +51,13 @@ function Invoke-MemeLord {
 
     $MemeList = Invoke-RestMethod -Uri "https://api.imgflip.com/get_memes"
     $MemeID = $MemeList.data.memes | Where-Object Name -Like "*$MemeSearch*"
-    $MemeID = $MemeID.id
     if ($MemeID.Count -gt 1) {
-        $MemeID = $MemeID | Select-Object id, name, url | Out-GridView -OutputMode Single
+        $MemeID = $MemeID | Select-Object id, name, url | Out-GridView -OutputMode single
         $MemeID = $MemeID.id
     }
+
+    $MemeID = $MemeID.id
+
     if (!$MemeID) { return "Unable to find MemeSearch like $MemeSearch" }
     
     if ($testBoxes) {
