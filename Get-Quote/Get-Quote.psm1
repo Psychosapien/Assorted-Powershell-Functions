@@ -156,6 +156,8 @@ Function Get-Quote {
     - $person"
 
     if ($OnImage) {
+
+        Write-host "Generating image, this takes a moment so please be patient...`n" -foregroundcolor yellow
         $Header = @{ Authorization = "563492ad6f917000010000019142f114c9664f5aaf3a03c69726add5" }
 
         $PageNum = get-random -Minimum 1 -Maximum ((Invoke-WebRequest -Uri "https://api.pexels.com/v1/search?query=nature&orientation=square&per_page=1" -Headers $Header).Content | convertfrom-json).Total_results
