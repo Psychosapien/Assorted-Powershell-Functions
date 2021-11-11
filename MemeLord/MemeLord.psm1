@@ -10,7 +10,7 @@ function Key-Check {
         $fileContent | Set-Content $PSScriptRoot/Config.ps1   
     }
 
-    if ($null -eq ($Password = $Properties.Password | ConvertTo-SecureString)) {
+    if ($null -eq ($Password = $Properties.Password | ConvertTo-SecureString -ErrorAction SilentlyContinue)) {
         $Password = Read-Host "Please enter your password" -assecurestring | convertfrom-securestring
         $textToAdd = "Password = " + '"' + "$Password" + '"'
         $fileContent = Get-Content $PSScriptRoot/Config.ps1
