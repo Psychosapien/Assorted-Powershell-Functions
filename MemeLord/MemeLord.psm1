@@ -32,7 +32,8 @@ function Invoke-MemeLord {
         [string]$BottomText = "",
         [string]$MiddleText = "",
         [string]$MemeSearch,
-        [string]$SavePath
+        [string]$SavePath,
+        [switch]$testBoxes
     )
 
     Key-Check
@@ -59,6 +60,12 @@ function Invoke-MemeLord {
     }
     if (!$MemeID) { return "Unable to find MemeSearch like $MemeSearch" }
     
+    if ($testBoxes) {
+        $TopText = "Top Text"
+        $MiddleText = "Middle Text"
+        $BottomText = "Bottom Text"
+    }
+
     $memeparams = @{
         template_id      = $MemeID
         username         = $Credentials.UserName
