@@ -54,9 +54,9 @@ function Invoke-MemeLord {
     if ($MemeID.Count -gt 1) {
         $MemeID = $MemeID | Select-Object id, name, url | Out-GridView -OutputMode single
         $MemeID = $MemeID.id
+    } else {
+        $MemeID = $MemeID.id
     }
-
-    $MemeID = $MemeID.id
 
     if (!$MemeID) { return "Unable to find MemeSearch like $MemeSearch" }
     
