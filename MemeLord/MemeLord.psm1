@@ -103,7 +103,7 @@ function Invoke-MemeLord {
     }
 }
 
-Run to update .psd1
+#Run to update .psd1
 <#
 $manifest = @{
     Path       = '.\MemeLord.psd1'
