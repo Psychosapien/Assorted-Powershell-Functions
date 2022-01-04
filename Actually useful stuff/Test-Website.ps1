@@ -1,32 +1,54 @@
 function Test-Website {
     [CmdletBinding()]
     param (
-        [string]$Url
+        [string]$Url,
+        [string]$testCount = 1000
     )
     
     begin {
         Write-Host `n"$Url test commencing..." -ForegroundColor Cyan
+
+        $Result = New-Object psobject
+        add-member -InputObject $Result -MemberType NoteProperty -Name Time -Value ""
+        add-member -InputObject $Result -MemberType NoteProperty -Name Response -Value ""
+        add-member -InputObject $Result -MemberType NoteProperty -Name ResponseTime -Value ""
+
+        $ResultsArray = @()
     }
     
     process {
-        for ($i = 0; $i -lt 1000; $i++) {
+        for ($i = 0; $i -lt $testCount; $i++) {
 
             $progresspreference = "silentlyContinue"
             
-            $response = (Measure-Command -Expression { $status = (Invoke-WebRequest -UseBasicParsing -Uri $URL -TimeoutSec 60 -ErrorAction SilentlyContinue).statusCode }).Milliseconds
+            $Result = New-Object psobject
+            add-member -InputObject $Result -MemberType NoteProperty -Name Time -Value ""
+            add-member -InputObject $Result -MemberType NoteProperty -Name Response -Value ""
+            add-member -InputObject $Result -MemberType NoteProperty -Name ResponseTime -Value ""
+    
+            $ResponseTime = Measure-Command -Expression { $status = Invoke-WebRequest -UseBasicParsing -Uri $URL -TimeoutSec 60 -ErrorAction SilentlyContinue }
+
+            $timestamp = $status.Headers.date.split(" ")
+            $Result.Time = $timestamp[$timestamp.count - 2]
+
+            $Result.Response = $status.statusCode
+
+            $Result.ResponseTime = $ResponseTime.Milliseconds
+
+            $ResultsArray += $Result
 
             $progresspreference = "Continue"
 
             Write-Host "------------------------------------"
             
-            if ($status -eq 200) {
+            if ($status.statusCode -eq 200) {
                 Write-Host "Website up" -ForegroundColor Green
-                Write-Host "Response time: $response ms" -ForegroundColor Yellow
-                Write-Host "Status: $status" -ForegroundColor Yellow
+                Write-Host "Response time: $($ResponseTime.Milliseconds) ms" -ForegroundColor Yellow
+                Write-Host "Status: $($status.statusCode)" -ForegroundColor Yellow
             }
             else {
                 Write-Host "WEBSITE DOWN!" -ForegroundColor Red
-                Write-Host "Status: $status" -ForegroundColor Yellow
+                Write-Host "Status: $($status.statusCode)" -ForegroundColor Yellow
             }
             
 
@@ -36,14 +58,31 @@ function Test-Website {
     }
     
     end {
-        
+        Write-Host "Test finished!"
+
+        $ArrayTotals = ($ResultsArray.responsetime | Measure-Object -Average -Maximum -Minimum)
+
+        $FinalResult = New-Object psobject
+        add-member -InputObject $FinalResult -MemberType NoteProperty -Name 'Maximum Response' -Value "$($ArrayTotals.Maximum) ms"
+        add-member -InputObject $FinalResult -MemberType NoteProperty -Name 'Minimum Response' -Value "$($ArrayTotals.Minimum) ms"
+        add-member -InputObject $FinalResult -MemberType NoteProperty -Name 'Average Response' -Value "$($ArrayTotals.Average) ms"
+
+        Write-Host "Top Slowest response times:"
+        $ResultsArray | Where-Object { $_.ResponseTime -ge $ArrayTotals.Maximum / 2 }
+
+        $Failures = $ResultsArray | Where-Object { $_.Response -ne "200" }
+
+        if ($Failres) {
+            Write-Host "Failed requests:"
+            $Failures
+        }
     }
 }
 # SIG # Begin signature block
 # MIII2wYJKoZIhvcNAQcCoIIIzDCCCMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnkocVQA66Ms0dXcfkvPHqE7E
-# s9+gggYzMIIGLzCCBRegAwIBAgIKERM1LAABAAABvTANBgkqhkiG9w0BAQsFADBj
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUre17KSiLQutmp83lUUZY5ZPV
+# Oc+gggYzMIIGLzCCBRegAwIBAgIKERM1LAABAAABvTANBgkqhkiG9w0BAQsFADBj
 # MRIwEAYKCZImiZPyLGQBGRYCdWsxEjAQBgoJkiaJk/IsZAEZFgJjbzEbMBkGCgmS
 # JomT8ixkARkWC3VuaXRlLWdyb3VwMRwwGgYDVQQDExNUaGUgVU5JVEUgR3JvdXAg
 # UExDMB4XDTIwMDQwMTA5MTM1NloXDTIyMDQwMTA5MjM1NlowgY8xEjAQBgoJkiaJ
@@ -81,11 +120,11 @@ function Test-Website {
 # GgYDVQQDExNUaGUgVU5JVEUgR3JvdXAgUExDAgoREzUsAAEAAAG9MAkGBSsOAwIa
 # BQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgor
 # BgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3
-# DQEJBDEWBBQmAHfLCQKoLJELjlk2yyjQVhH6jjANBgkqhkiG9w0BAQEFAASCAQAM
-# ZKU/uBMpRQgiyk1FPiVBUuAQgHWo2kuIXi7l3htKnDM7eN4M/uHE0/OVYNn0jByr
-# v+JD6fziaQOPoIAOg4/O0M4ZU9VwW2q9bQLYuQGdPJXftzAsY6l9NmQXx78WRFG2
-# L9JBRIe4EZiY3itkfMSWafV/8oVDL42OAKgH5SUbf2WONUyoKCpvmuEC5RYKpH6D
-# MugXhnJAaSlq/x2nGYKL1+/5LtLx7TqtgmycaZ38Q3+A778IR7py7j4xRplMC9jG
-# OId3f6zcPmJNLdbiiSrC8w1E6mnOonHq73aEFmX/n9FFhCG4DXLbAgaqsAiyG9ZD
-# Y0AW58rZBKvJQZlAQfhP
+# DQEJBDEWBBS9DHgPlB09rk4+yMhi+rPo58/hdjANBgkqhkiG9w0BAQEFAASCAQAB
+# tQyeXC1p7LegVpZ5pWjvqgAGK5dtwf+zsa9LBGUkDdu6svB14OzkJK139/g4Uuti
+# qJKzdXOLHfrHzRFYatOL9toh4fcdtfntkt9icQmsUQx/tO8riOwhZ0bkEu0LcgsQ
+# 6jMPhUpZThDd/Sk3FfIboPMdweUNiNzCsOcTn84LaK7hDPjw8uLx/7CdbtFGpdrD
+# k/wftV4dHh1dOZ+wKuZJKtcs+L6WUADooB8epk6UqL6Z6cwQzi55U1DwxuxhBIhS
+# 4hA/Fe4q5ezrAhR5RT2C8YPXqwiJSCNzWAgdMJsUmKl8EnzvIdHLpCKUT7UuXGOG
+# y92FYuwGTq8ChApnoUmc
 # SIG # End signature block
