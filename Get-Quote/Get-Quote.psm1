@@ -152,8 +152,7 @@ Function Get-Quote {
     $PreparedQuote = Invoke-Command $scriptblock
 
     # Build the final quote
-    $FinalQuote = "$($PreparedQuote)
-    - $person"
+    $FinalQuote = "$($PreparedQuote)                                               -$person"
 
     if ($OnImage) {
 
@@ -171,7 +170,7 @@ Function Get-Quote {
 
         $Text = [System.Web.HttpUtility]::UrlEncode($FinalQuote) 
 
-        $CompiledImage = "https://textoverimage.moesif.com/image?image_url=$ImageURL&overlay_color=00000089&text=$Text&text_color=fbfbfbff&text_size=64&y_align=middle&x_align=left"
+        $CompiledImage = "https://textoverimage.moesif.com/image?image_url=$ImageURL&overlay_color=00000089&text=$Text&text_color=fbfbfbff&text_size=64&margin=70&y_align=middle&x_align=left"
 
         $filename = "$($env:appdata)\temp.jpeg"
         Invoke-WebRequest $CompiledImage -OutFile $filename
