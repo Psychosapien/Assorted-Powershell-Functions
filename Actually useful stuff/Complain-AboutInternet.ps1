@@ -44,16 +44,15 @@ if ($PreviousSpeedCheck.count -eq 5) {
         $AllSpeedChecks += $i
     }
 
-    $username = "thewholefam23@gmail.com"
-    $password = Get-Content "C:\Powershell\gmailEncrypted.txt"  | ConvertTo-SecureString
+    $username = ""
+    $password = Get-Content ""  | ConvertTo-SecureString
     $credential = New-Object System.Management.Automation.PsCredential($username,$password)
 
-    #$to = "supportdesk@truespeed.com"
-    $to = "com@tolyer.co.uk"
-    $Subject = "28767 - Poor Connection Speed on $(Get-date -Format dd/MM/yyyy)"
+    $to = "supportdesk@truespeed.com"
+    $Subject = "Poor Connection Speed on $(Get-date -Format dd/MM/yyyy)"
     $SMTP = "smtp.gmail.com"
 
-    $Body = "<p>Account Number: 28767</p>
+    $Body = "<p>Account Number: </p>
     <p><br></p>
     <p>Hello there,</p>
     <p>I am contacting you to advise that for 5 sequential hours, my internet speed has been far below the advertised speeds.</p>
