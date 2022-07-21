@@ -5,6 +5,19 @@ filter OWOinate {
             
 }
 
+function Get-Emoji {
+      
+    $codes = ((invoke-webrequest https://emoji-api.com/emojis?access_key=ebaf054cbe9a36b1454a0541a96d3a9fe2d152a5).content | ConvertFrom-Json).codePoint
+
+    $code = $codes.split(" ")
+
+    $FullUnicode = "$(get-random $code)"
+    $StrippedUnicode = $FullUnicode -replace 'U\+',''
+    $UnicodeInt = [System.Convert]::toInt32($StrippedUnicode,16)
+    [System.Char]::ConvertFromUtf32($UnicodeInt)
+  
+  }
+
 function OWO {
 
     $error. clear()
@@ -20,7 +33,27 @@ function OWO {
     $n = get-random -Maximum 9
     
     do {
-        $collection.Insert($n, "$(get-random $sadness)")
+
+        $RollDice = Get-Random -Minimum 1 -Maximum 1000
+
+        if ($RollDice -lt 800) {
+            $collection.Insert($n, "$(get-random $sadness)")
+        } else {
+
+            $EmojiCount = Get-random -Minimum 1 -Maximum 7
+            $i = 1
+            $EmojiArray = @()
+
+            for ($i = 0; $i -lt $EmojiCount; $i++) {
+
+                $EmojiArray += Get-Emoji
+            }
+
+            foreach ($emoji in $EmojiArray) {
+                $collection.Insert($n, $Emoji)
+            }
+            
+        }
         $n = $n + (get-random -min 5 -max 18)
     }
 
